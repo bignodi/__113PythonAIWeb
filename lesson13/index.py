@@ -1,55 +1,58 @@
+import requests
+from pydantic import BaseModel,Field,RootModel,field_validator,field_serializer
 import streamlit as st
 
-st.subheader("BMI值計算--(測試修改from github)")
-st.divider()
-st.latex('BMI值計算公式:    BMI = 體重(公斤) / 身高^2(公尺^2)')
+class Site(BaseModel):
+    站點名稱:str = Field(alias="sna")
+    行政區:str = Field(alias="sarea")
+    日期時間:str = Field(alias='mday')
+    地址:str = Field(alias='ar')
+    總數:int = Field(alias='tot')
+    可借:int = Field(alias='sbi')
+    可還:int = Field(alias='bemp')
+    狀態:bool = Field(alias='act')
+    緯度:float = Field(alias='lat')
+    經度:float = Field(alias='lng')
 
-st.markdown('<h6 style="color:blue;text-align:center">\
-            52(公斤) / 1.552 ( 公尺<sup>2</sup> ) = 21.6\
-            </h6>',
-            unsafe_allow_html=True)
-
-st.markdown('<h6 style="color:orange;text-align:center">體重正常範圍為 BMI = 18.5～24</h6>',
-            unsafe_allow_html=True)
-
-st.markdown('<hr style="border:0;margin:0 auto;width:80%;border-top:2px dotted blue">',
-            unsafe_allow_html=True)
-
-st.markdown('<h6 style="color:purple;text-align:center">快看看自己的BMI是否在理想範圍吧!</h6>',
-            unsafe_allow_html=True)
-
-
-with st.form('bmi form'):
+    @field_validator('站點名稱',mode='before')
+    @classmethod
+    def abc(cls,value):
+        return value.split('_')[-1]
     
-    ## 在st.session_state 顯示值
-    # height = st.slider(":green[選擇身高(cm)]",max_value=250,min_value=100, key="height")
-    # weight = st.number_input(":green[選擇體重(kg)]", max_value=200,min_value=30, key="weight")
-
-    ## 需宣告key值接收, 如果沒有則會一直維在min_value    
-    height = st.slider(":green[選擇身高(cm)]",max_value=250,min_value=100,key="height")
-    weight = st.number_input(":green[選擇體重(kg)]", max_value=200,min_value=30,key="weight")
-    txt = ''
-
-    ## form submitted 才會開始計算
-    if st.form_submit_button("BMI計算"):
-        bmi_result = round( weight / ((height/100) ** 2),1 )
-               
-        if bmi_result < 18.5:
-            txt = "體重過輕"
-        elif bmi_result < 24:
-            txt = "正常範圍"
-        elif bmi_result < 27:
-            txt = "過重"
-        elif bmi_result < 30:
-            txt = "輕度肥胖"
-        elif bmi_result < 35:
-            txt = "中度肥胖"
+    @field_validator('日期時間',mode='before')
+    @classmethod
+    def abcd(cls,value):
+        return f'{value[:4]}-{value[4:6]}-{value[6:8]} {value[8:10]}:{value[10:12]}:{value[12:]}'
+    
+    @field_serializer('狀態')
+    def abce(self,value):
+        if value:
+            return "營業中"
         else:
-            txt = "重度肥胖"
+            return "維護中"
         
-        st.markdown(f'## :orange[{bmi_result}]')
-        st.markdown(f"#### :black[{txt}]")
+class Root(RootModel):
+    root:list[Site]
 
 
-st.write(st.session_state)
-#st.session_state
+@st.cache_data
+def download_youbike()->str:
+    youbike_url = 'https://data.ntpc.gov.tw/api/datasets/010e5b15-3823-4b20-b401-b1cf000550c5/json?size=2000'
+    try:
+        response = requests.get(youbike_url)
+    except Exception as e:
+        print(e)
+    else:
+        return response.text
+
+data_str = download_youbike()
+root = Root.model_validate_json(data_str)
+data = root.model_dump()
+
+def ijk(value):
+    return value['行政區']
+
+areas:list[str] = list(set(map(ijk,data)))
+
+option = st.selectbox("請選擇行政區",areas)
+st.write("您選擇:", option)
