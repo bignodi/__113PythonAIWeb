@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.subheader("BMI值計算")
+st.subheader("BMI值計算--(測試修改from github)")
 st.divider()
 st.latex('BMI值計算公式:    BMI = 體重(公斤) / 身高^2(公尺^2)')
 
