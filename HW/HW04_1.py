@@ -24,7 +24,6 @@ st.markdown("**BMI值計算公式:**    BMI = 體重(公斤) / 身高$^2$(公尺
 st.markdown("例如：一個52公斤的人，身高是155公分，則BMI為 :")
 st.markdown("52(公斤)/1.55 $^2$ ( 公尺$^2$ )= 21.6")
 st.markdown("體重正常範圍為  BMI=18.5～24")
-st.divider()
 
 st.markdown("**:violet[快看看自己的BMI是否在理想範圍吧!]**")
 
