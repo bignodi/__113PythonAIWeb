@@ -35,12 +35,26 @@ class Root(RootModel):
     root:list[Site]
 
 
+# @st.cache_data
+# def download_youbike()->str:
+#     youbike_url = 'https://data.ntpc.gov.tw/api/datasets/010e5b15-3823-4b20-b401-b1cf000550c5/json?size=2000'
+#     try:
+#         response = requests.get(youbike_url)
+#     except Exception as e:
+#         print(e)
+#     else:
+#         return response.text
+
+## 改寫異常處理 (未改寫前程式會掛掉, 出現ValidationError: 1 validation error for Root JSON.....)
 @st.cache_data
 def download_youbike()->str:
     youbike_url = 'https://data.ntpc.gov.tw/api/datasets/010e5b15-3823-4b20-b401-b1cf000550c5/json?size=2000'
+    #youbike_url = 'https://ntpc.gov.tw/api/datasets/010e5b15-3823-4b20-b401-b1cf000550c5/json?size=2000'
     try:
         response = requests.get(youbike_url)
+        response.raise_for_status()
     except Exception as e:
-        print(e)
+        raise Exception("目前連線有問題, 請稍後再試")
     else:
         return response.text
+
